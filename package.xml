@@ -26,4 +26,8 @@
   <run_depend>graphviz</run_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <architecture_independent/>
+  </export>
 </package>
