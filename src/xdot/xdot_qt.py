@@ -1464,7 +1464,7 @@ class DotWidget(QWidget):
     def set_filter(self, filter):
         self.filter = filter
 
-    def set_dotcode(self, dotcode, filename='<stdin>'):
+    def set_dotcode(self, dotcode, filename='<stdin>',center=True):
         if isinstance(dotcode, unicode):
             dotcode = dotcode.encode('utf8')
         p = subprocess.Popen(
@@ -1486,7 +1486,7 @@ class DotWidget(QWidget):
 #            dialog.destroy()
             return False
         try:
-            self.set_xdotcode(xdotcode)
+            self.set_xdotcode(xdotcode,center)
         except ParseError, ex:
 #            dialog = gtk.MessageDialog(type=gtk.MESSAGE_ERROR,
 #                                       message_format=str(ex),
@@ -1499,11 +1499,11 @@ class DotWidget(QWidget):
             self.openfilename = filename
             return True
 
-    def set_xdotcode(self, xdotcode):
+    def set_xdotcode(self, xdotcode, center=True):
         #print xdotcode
         parser = XDotParser(xdotcode)
         self.graph = parser.parse()
-        self.zoom_image(self.zoom_ratio, center=True)
+        self.zoom_image(self.zoom_ratio, center=center)
 
     def reload(self):
         if self.openfilename is not None:
@@ -1701,12 +1701,24 @@ class DotWidget(QWidget):
             if url is not None:
                 self.emit(SIGNAL("clicked"), unicode(url.url), event)
             else:
+                self.emit(SIGNAL("clicked"), 'none', event)
                 jump = self.get_jump(x, y)
                 if jump is not None:
                     self.animate_to(jump.x, jump.y)
 
             event.accept()
             return
+        if event.button() == Qt.RightButton and self.is_click(event):
+            x, y = event.x(), event.y()
+            url = self.get_url(x, y)
+            if url is not None:
+                self.emit(SIGNAL("right_clicked"), unicode(url.url), event)
+            else:
+                self.emit(SIGNAL("right_clicked"), 'none', event)
+                jump = self.get_jump(x, y)
+                if jump is not None:
+                    self.animate_to(jump.x, jump.y)
+        
         if event.button() in (Qt.LeftButton, Qt.MidButton):
             event.accept()
         return
