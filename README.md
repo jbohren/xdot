@@ -1,7 +1,7 @@
 xdot
 ====
 
-XDot.py, by Jose Fonseca, is an interactive viewer for graphs written in
+XDot.py, by [Jose Fonseca](http://jrfonseca.blogspot.com/), is an interactive viewer for graphs written in
 Graphviz's dot language.
 
 This package adds front-end capabilities to XDot including WX Widget support
