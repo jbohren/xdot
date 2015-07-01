@@ -1,4 +1,4 @@
-#!nusr/bin/env python
+#!/usr/bin/env python
 #
 # Copyright 2008 Jose Fonseca
 #
