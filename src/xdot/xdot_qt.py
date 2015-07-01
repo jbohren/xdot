@@ -54,7 +54,6 @@ class Pen:
         self.linewidth = 1.0
         self.fontsize = 14.0
         self.fontname = "Times-Roman"
-#        self.dash = ()
         self.dash = Qt.SolidLine
 
     def copy(self):
@@ -89,9 +88,6 @@ class Shape:
 
 class TextShape(Shape):
     """Used to draw a text shape with a QPainter"""
-    #fontmap = pangocairo.CairoFontMap()
-    #fontmap.set_resolution(72)
-    #context = fontmap.create_context()
 
     LEFT, CENTER, RIGHT = -1, 0, 1
 
@@ -120,87 +116,6 @@ class TextShape(Shape):
                 self.x - self.w / 2.0,
                 self.y,
                 self.t)
-#
-#        try:
-#            layout = self.layout
-#        except AttributeError:
-#            layout = cr.create_layout()
-#
-#            # set font options
-#            # see http://lists.freedesktop.org/archives/cairo/2007-February/009688.html
-#            context = layout.get_context()
-#            fo = cairo.FontOptions()
-#            fo.set_antialias(cairo.ANTIALIAS_DEFAULT)
-#            fo.set_hint_style(cairo.HINT_STYLE_NONE)
-#            fo.set_hint_metrics(cairo.HINT_METRICS_OFF)
-#            try:
-#                pangocairo.context_set_font_options(context, fo)
-#            except TypeError:
-#                # XXX: Some broken pangocairo bindings show the error
-#                # 'TypeError: font_options must be a cairo.FontOptions or None'
-#                pass
-#
-#            # set font
-#            font = pango.FontDescription()
-#            font.set_family(self.pen.fontname)
-#            font.set_absolute_size(self.pen.fontsize*pango.SCALE)
-#            layout.set_font_description(font)
-#
-#            # set text
-#            layout.set_text(self.t)
-#
-#            # cache it
-#            self.layout = layout
-#        else:
-#            cr.update_layout(layout)
-#
-#        descent = 2 # XXX get descender from font metrics
-#
-#        width, height = layout.get_size()
-#        width = float(width)/pango.SCALE
-#        height = float(height)/pango.SCALE
-#        # we know the width that dot thinks this text should have
-#        # we do not necessarily have a font with the same metrics
-#        # scale it so that the text fits inside its box
-#        if width > self.w:
-#            f = self.w / width
-#            width = self.w # equivalent to width *= f
-#            height *= f
-#            descent *= f
-#        else:
-#            f = 1.0
-#
-#        if self.j == self.LEFT:
-#            x = self.x
-#        elif self.j == self.CENTER:
-#            x = self.x - 0.5*width
-#        elif self.j == self.RIGHT:
-#            x = self.x - width
-#        else:
-#            assert 0
-#
-#        y = self.y - height + descent
-#
-#        cr.move_to(x, y)
-#
-#        cr.save()
-#        cr.scale(f, f)
-#        cr.set_source_rgba(*self.select_pen(highlight).color)
-#        cr.show_layout(layout)
-#        cr.restore()
-#
-#        if 0: # DEBUG
-#            # show where dot thinks the text should appear
-#            cr.set_source_rgba(1, 0, 0, .9)
-#            if self.j == self.LEFT:
-#                x = self.x
-#            elif self.j == self.CENTER:
-#                x = self.x - 0.5*self.w
-#            elif self.j == self.RIGHT:
-#                x = self.x - self.w
-#            cr.move_to(x, self.y)
-#            cr.line_to(x+self.w, self.y)
-#            cr.stroke()
         pass
 
 class EllipseShape(Shape):
@@ -236,30 +151,18 @@ class PolygonShape(Shape):
         self.filled = filled
 
     def draw(self, painter, highlight=False):
-#        x0, y0 = self.points[-1]
 
-#        cr.move_to(x0, y0)
-#        for x, y in self.points:
-#            cr.line_to(x, y)
-#        cr.close_path()
         polygon_points = QPolygonF()
         for x, y in self.points:
-            polygon_points.append (QPointF(x, y))    
+            polygon_points.append (QPointF(x, y))
 
         pen = self.select_pen(highlight)
         painter.save()
         if self.filled:
-#            cr.set_source_rgba(*pen.fillcolor)
-#            cr.fill_preserve()
-#            cr.fill()
             painter.setPen(QColor.fromRgbF(*pen.fillcolor))
             painter.setBrush(QColor.fromRgbF(*pen.fillcolor))
         else:
-#            cr.set_dash(pen.dash)
-#            cr.set_line_width(pen.linewidth)
-#            cr.set_source_rgba(*pen.color)
-#            cr.stroke()
-            painter.setPen(QPen(QBrush(QColor.fromRgbF(*pen.color)), pen.linewidth, 
+            painter.setPen(QPen(QBrush(QColor.fromRgbF(*pen.color)), pen.linewidth,
                                             pen.dash, Qt.SquareCap, Qt.MiterJoin))
             painter.setBrush(Qt.NoBrush)
 
@@ -276,7 +179,7 @@ class LineShape(Shape):
 
     def draw(self, painter, highlight=False):
         pen = self.select_pen(highlight)
-        painter.setPen(QPen(QBrush(QColor.fromRgbF(*pen.color)), pen.linewidth, 
+        painter.setPen(QPen(QBrush(QColor.fromRgbF(*pen.color)), pen.linewidth,
                                             pen.dash, Qt.SquareCap, Qt.MiterJoin))
 
         x0, y0 = self.points[0]
@@ -298,17 +201,26 @@ class BezierShape(Shape):
         painter_path = QPainterPath()
         painter_path.moveTo(QPointF(*self.points[0]))
         for i in xrange(1, len(self.points), 3):
-            painter_path.cubicTo(QPointF(*self.points[i]),  QPointF(*self.points[i + 1]),  QPointF(*self.points[i + 2]))
+            painter_path.cubicTo(
+                QPointF(*self.points[i]),
+                QPointF(*self.points[i + 1]),
+                QPointF(*self.points[i + 2]))
         pen = self.select_pen(highlight)
         qpen = QPen()
         if self.filled:
-            qpen.setColor(QColor.fromRgbF(*pen.fillcolor))
-            qpen.setBrush(QColor.fromRgbF(*pen.fillcolor))
+            brush = QBrush()
+            brush.setColor(QColor.fromRgbF(*pen.fillcolor))
+            brush.setStyle(Qt.SolidPattern)
+            painter.setBrush(brush)
+            #qpen.setCapStyle(Qt.RoundCap)
+            #qpen.setJoinStyle(Qt.RoundJoin)
+            #painter_path.setFillRule(Qt.OddEvenFill)
         else:
-            qpen.setStyle(pen.dash)
-            qpen.setWidth(pen.linewidth)
-            qpen.setColor(QColor.fromRgbF(*pen.color))
+            painter.setBrush(Qt.NoBrush)
 
+        qpen.setStyle(pen.dash)
+        qpen.setWidth(pen.linewidth)
+        qpen.setColor(QColor.fromRgbF(*pen.color))
         painter.setPen(qpen)
         painter.drawPath(painter_path)
 
@@ -445,11 +357,6 @@ class Graph(Shape):
     def draw(self, cr, highlight_items=None):
         if highlight_items is None:
             highlight_items = ()
-#        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
-
-#        cr.set_line_cap(cairo.LINE_CAP_BUTT)
-#        cr.set_line_join(cairo.LINE_JOIN_MITER)
-
         for shape in self.shapes:
             shape.draw(cr)
         for edge in self.edges:
@@ -487,7 +394,7 @@ class XDotAttrParser:
         self.parser = parser
         self.buf = self.unescape(buf)
         self.pos = 0
-        
+
         self.pen = Pen()
         self.shapes = []
 
@@ -585,7 +492,7 @@ class XDotAttrParser:
             b = b*s
             a = 1.0
             return r, g, b, a
-                
+
         sys.stderr.write("unknown color '%s'\n" % c)
         return None
 
@@ -651,7 +558,7 @@ class XDotAttrParser:
                 break
 
         return self.shapes
-    
+
     def transform(self, x, y):
         return self.parser.transform(x, y)
 
@@ -716,7 +623,7 @@ class ParseError(Exception):
 
     def __str__(self):
         return ':'.join([str(part) for part in (self.filename, self.line, self.col, self.msg) if part != None])
-        
+
 
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class Scanner:
@@ -856,9 +763,9 @@ class Parser:
     def match(self, type):
         if self.lookahead.type != type:
             raise ParseError(
-                msg = 'unexpected token %r' % self.lookahead.text, 
-                filename = self.lexer.filename, 
-                line = self.lookahead.line, 
+                msg = 'unexpected token %r' % self.lookahead.text,
+                filename = self.lexer.filename,
+                line = self.lookahead.line,
                 col = self.lookahead.col)
 
     def skip(self, type):
@@ -961,7 +868,7 @@ class DotLexer(Lexer):
             text = text.replace('\\\r\n', '')
             text = text.replace('\\\r', '')
             text = text.replace('\\\n', '')
-            
+
             text = text.replace('\\r', '\r')
             text = text.replace('\\n', '\n')
             text = text.replace('\\t', '\t')
@@ -1105,7 +1012,7 @@ class XDotParser(DotParser):
     def __init__(self, xdotcode):
         lexer = DotLexer(buf = xdotcode)
         DotParser.__init__(self, lexer)
-        
+
         self.nodes = []
         self.edges = []
         self.shapes = []
@@ -1135,7 +1042,7 @@ class XDotParser(DotParser):
             self.height = ymax - ymin
 
             self.top_graph = False
-        
+
         for attr in ("_draw_", "_ldraw_", "_hdraw_", "_tdraw_", "_hldraw_", "_tldraw_"):
             if attr in attrs:
                 parser = XDotAttrParser(self, attrs[attr])
@@ -1166,7 +1073,7 @@ class XDotParser(DotParser):
             pos = attrs['pos']
         except KeyError:
             return
-        
+
         points = self.parse_edge_pos(pos)
         shapes = []
         for attr in ("_draw_", "_ldraw_", "_hdraw_", "_tdraw_", "_hldraw_", "_tldraw_"):
@@ -1201,7 +1108,7 @@ class XDotParser(DotParser):
                 x, y = fields
             except ValueError:
                 # TODO: handle start/end points
-                #AB Handle data like like e,40,50 here          
+                #AB Handle data like like e,40,50 here
                 continue
             else:
                 points.append(self.transform(float(x), float(y)))
@@ -1375,7 +1282,7 @@ class PanAction(DragAction):
         self.dot_widget.x += deltax / self.dot_widget.zoom_ratio
         self.dot_widget.y += deltay / self.dot_widget.zoom_ratio
         self.dot_widget.update()
-        
+
     def stop(self):
         self.dot_widget.cursor().setShape(Qt.ArrowCursor)
 
@@ -1397,7 +1304,7 @@ class ZoomAreaAction(DragAction):
 
     def drag(self, deltax, deltay):
         self.dot_widget.update()
-    
+
     def draw(self, painter):
         #TODO: implement this for qt
         print "ERROR: UNIMPLEMENTED ZoomAreaAction.draw"
@@ -1455,12 +1362,22 @@ class DotWidget(QWidget):
         self.presstime = None
         self.highlight = None
 
+        # Callback register
+        self.select_cbs = []
+        self.dc = None
+        self.ctx = None
+        self.items_by_url = {}
+
         self.setMouseTracking (True) # track all mouse events
-        
+
     ZOOM_INCREMENT = 1.25
     ZOOM_TO_FIT_MARGIN = 12
     POS_INCREMENT = 100
-    
+
+    ### User callbacks
+    def register_select_callback(self, cb):
+        self.select_cbs.append(cb)
+
     def set_filter(self, filter):
         self.filter = filter
 
@@ -1487,6 +1404,16 @@ class DotWidget(QWidget):
             return False
         try:
             self.set_xdotcode(xdotcode,center)
+
+            # Store references to all the items
+            self.items_by_url = {}
+            for item in self.graph.nodes + self.graph.edges:
+                if item.url is not None:
+                    self.items_by_url[item.url] = item
+
+            # Store references to subgraph states
+            self.subgraph_shapes = self.graph.subgraph_shapes
+
         except ParseError, ex:
 #            dialog = gtk.MessageDialog(type=gtk.MESSAGE_ERROR,
 #                                       message_format=str(ex),
@@ -1508,7 +1435,7 @@ class DotWidget(QWidget):
     def reload(self):
         if self.openfilename is not None:
             try:
-                fp = file(self.openfilename, 'rt')
+                fp = open(str(self.openfilename), "rb")
                 self.set_dotcode(fp.read(), self.openfilename)
                 fp.close()
             except IOError:
@@ -1558,12 +1485,12 @@ class DotWidget(QWidget):
         self.x = x
         self.y = y
         self.update()
-        
+
     def set_highlight(self, items):
         if self.highlight != items:
             self.highlight = items
             self.update()
-            
+
     def zoom_image(self, zoom_ratio, center=False, pos=None):
         if center:
             self.x = self.graph.width/2
@@ -1595,7 +1522,7 @@ class DotWidget(QWidget):
         self.x = (x1 + x2) / 2
         self.y = (y1 + y2) / 2
         self.update()
-        
+
     def zoom_to_fit(self):
 #        rect = self.get_allocation()
         rect = self.rect()
@@ -1631,8 +1558,10 @@ class DotWidget(QWidget):
     def on_zoom_100(self):
 #    def on_zoom_100(self, action):
         self.zoom_image(1.0)
-        
+
     def keyPressEvent(self, event):
+        self.animation.stop()
+        self.drag_action.abort()
         if event.key() == Qt.Key_Left:
             self.x -= self.POS_INCREMENT/self.zoom_ratio
             self.update()
@@ -1654,8 +1583,11 @@ class DotWidget(QWidget):
         elif event.key() == Qt.Key_PageUp:
             self.drag_action.abort()
             self.drag_action = NullAction(self)
-        elif event.key() == "r":
+        elif event.key() == Qt.Key_R:
             self.reload()
+        elif event.key() == Qt.Key_F:
+            self.zoom_to_fit()
+        event.accept()
 
     def get_drag_action(self, event):
         modifiers = event.modifiers()
@@ -1672,6 +1604,9 @@ class DotWidget(QWidget):
         self.animation.stop()
         self.drag_action.abort()
 
+        for cb in self.select_cbs:
+            cb(event)
+
         action_type = self.get_drag_action(event)
         self.drag_action = action_type(self)
         self.drag_action.on_button_press(event)
@@ -1680,7 +1615,7 @@ class DotWidget(QWidget):
         self.pressx = event.x()
         self.pressy = event.y()
         event.accept()
-        
+
     def is_click(self, event, click_fuzz=4, click_timeout=1.0):
         if self.presstime is None:
             # got a button release without seeing the press?
@@ -1718,20 +1653,12 @@ class DotWidget(QWidget):
                 jump = self.get_jump(x, y)
                 if jump is not None:
                     self.animate_to(jump.x, jump.y)
-        
+
         if event.button() in (Qt.LeftButton, Qt.MidButton):
             event.accept()
         return
 
     def on_area_scroll_event(self, area, event):
-#        if event.direction == gtk.gdk.SCROLL_UP:
-#            self.zoom_image(self.zoom_ratio * self.ZOOM_INCREMENT,
-#                            pos=(event.x, event.y))
-#            return True
-#        if event.direction == gtk.gdk.SCROLL_DOWN:
-#            self.zoom_image(self.zoom_ratio / self.ZOOM_INCREMENT,
-#                            pos=(event.x, event.y))
-#            return True
         return False
 
     def wheelEvent(self, event):
@@ -1744,6 +1671,9 @@ class DotWidget(QWidget):
 
     def mouseMoveEvent(self, event):
         self.drag_action.on_motion_notify(event)
+        self.setFocus()
+        for cb in self.select_cbs:
+            cb(event)
 
     def on_area_size_allocate(self, area, allocation):
         if self.zoom_to_fit_on_resize:
@@ -1790,7 +1720,7 @@ class DotWindow(QMainWindow):
         self.setPalette(palette)
 
         self.filename = None
-        
+
         file_open_action = self.create_action("&Open...", self.on_open,
                 QKeySequence.Open, "fileopen", "Open an existing dot file")
         file_reload_action = self.create_action("&Refresh", self.on_reload,
@@ -1815,19 +1745,17 @@ class DotWindow(QMainWindow):
         fileToolbar = self.addToolBar("Zoom")
         fileToolbar.setObjectName("ZoomToolBar")
         self.add_actions(fileToolbar, (zoom_in_action, zoom_out_action,  zoom_fit_action,  zoom_100_action))
-        
+
         settings = QSettings()
         self.recent_files = settings.value("RecentFiles").toStringList()
         size = settings.value("MainWindow/Size", QVariant(QSize(512, 512))).toSize()
         self.resize(size)
         position = settings.value("MainWindow/Position", QVariant(QPoint(0, 0))).toPoint()
         self.move(position)
-        #geometry = settings.value("MainWindow/Geometry").toByteArray()
-        #self.restoreGeometry(geometry)
+
         self.restoreState(settings.value("MainWindow/State").toByteArray())
         self.update_file_menu()
-#        QTimer.singleShot(0, self.load_initial_file)
-        
+
         self.show()
 
     def create_action(self, text, slot=None, shortcut=None, icon=None,
@@ -1852,11 +1780,8 @@ class DotWindow(QMainWindow):
                 target.addSeparator()
             else:
                 target.addAction(action)
-                
+
     def update_file(self, filename):
-    #AB this function is called every 1000 milliseconds by gobject.timeout_add(1000, win.update, args[0]) in main ()
-#    def update(self, filename):
-    #AB renamed from update() to update_file() to avoid confusion with QWidget's update()
         import os
         if not hasattr(self, "last_mtime"):
             self.last_mtime = None
@@ -1873,13 +1798,11 @@ class DotWindow(QMainWindow):
 
     def set_dotcode(self, dotcode, filename='<stdin>'):
         if self.widget.set_dotcode(dotcode, filename):
-#            self.set_title(os.path.basename(filename) + ' - Dot Viewer')
             self.setWindowTitle(os.path.basename(filename) + ' - ' + QApplication.applicationName())
             self.widget.zoom_to_fit()
 
     def set_xdotcode(self, xdotcode, filename='<stdin>'):
         if self.widget.set_xdotcode(xdotcode):
-#            self.set_title(os.path.basename(filename) + ' - Dot Viewer')
             self.setWindowTitle(os.path.basename(filename) + ' - ' + QApplication.applicationName())
             self.widget.zoom_to_fit()
 
@@ -1897,35 +1820,8 @@ class DotWindow(QMainWindow):
             self.add_recent_file(filename)
         except IOError, ex:
             pass
-#            dlg = gtk.MessageDialog(type=gtk.MESSAGE_ERROR,
-#                                    message_format=str(ex),
-#                                    buttons=gtk.BUTTONS_OK)
-#            dlg.set_title('Dot Viewer')
-#            dlg.run()
-#            dlg.destroy()
 
     def on_open(self):
-#        chooser = gtk.FileChooserDialog(title="Open dot File",
-#                                        action=gtk.FILE_CHOOSER_ACTION_OPEN,
-#                                        buttons=(gtk.STOCK_CANCEL,
-#                                                 gtk.RESPONSE_CANCEL,
-#                                                 gtk.STOCK_OPEN,
-#                                                 gtk.RESPONSE_OK))
-#        chooser.set_default_response(gtk.RESPONSE_OK)
-#        filter = gtk.FileFilter()
-#        filter.set_name("Graphviz dot files")
-#        filter.add_pattern("*.dot")
-#        chooser.add_filter(filter)
-#        filter = gtk.FileFilter()
-#        filter.set_name("All files")
-#        filter.add_pattern("*")
-#        chooser.add_filter(filter)
-#        if chooser.run() == gtk.RESPONSE_OK:
-#            filename = chooser.get_filename()
-#            chooser.destroy()
-#            self.open_file(filename)
-#        else:
-#            chooser.destroy()
         dir = os.path.dirname(self.filename) \
                 if self.filename is not None else "."
         formats = ["*.dot"]
@@ -1934,7 +1830,7 @@ class DotWindow(QMainWindow):
                             "Dot files (%s)" % " ".join(formats)))
         if filename:
             self.open_file(filename)
-                          
+
     def on_reload(self):
         self.widget.reload()
 
@@ -1956,7 +1852,7 @@ class DotWindow(QMainWindow):
                 self.file_menu.addAction(action)
         self.file_menu.addSeparator()
         self.file_menu.addAction(self.file_menu_actions[-1])
- 
+
     def add_recent_file(self, filename):
         if filename is None:
             return
@@ -1964,15 +1860,15 @@ class DotWindow(QMainWindow):
             self.recent_files.prepend(QString(filename))
             while self.recent_files.count() > 14:
                 self.recent_files.takeLast()
-                
-    def closeEvent(self, event):
+
+def closeEvent(self, event):
         settings = QSettings()
         filename = QVariant(QString(self.filename)) if self.filename is not None else QVariant()
         settings.setValue("LastFile", filename)
         recent_files = QVariant(self.recent_files) if self.recent_files else QVariant()
         settings.setValue("RecentFiles", recent_files)
         settings.setValue("MainWindow/Size", QVariant(self.size()))
-        
+
         #AB It looks like PyQt 4.7.4 has a bug that results in both self.pos() and self.geometry() returning the same values
         # see http://doc.qt.nokia.com/latest/application-windows.html#window-geometry for explanation of why they should be different
         # The results is a small (5,24) shift of window on consequent start from previous position
@@ -1981,13 +1877,13 @@ class DotWindow(QMainWindow):
         settings.setValue("MainWindow/Position", QVariant(self.pos()))
         #settings.setValue("MainWindow/Geometry", QVariant(self.saveGeometry()))
         settings.setValue("MainWindow/State", QVariant(self.saveState()))
-                
+
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------
 def main():
     import optparse
 
     parser = optparse.OptionParser(usage='\n\t%prog [file]', version='%%prog %s' % __version__)
-    # This program can shell to different Graphviz filter processes specified by -f option 
+    # This program can shell to different Graphviz filter processes specified by -f option
     parser.add_option(
         '-f', '--filter',
         type='choice', choices=('dot', 'neato', 'twopi', 'circo', 'fdp'),
@@ -2022,24 +1918,24 @@ def main():
 
 # Apache-Style Software License for ColorBrewer software and ColorBrewer Color
 # Schemes, Version 1.1
-# 
+#
 # Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State
 # University. All rights reserved.
-# 
+#
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-# 
+#
 #    1. Redistributions as source code must retain the above copyright notice,
-#    this list of conditions and the following disclaimer.  
+#    this list of conditions and the following disclaimer.
 #
 #    2. The end-user documentation included with the redistribution, if any,
 #    must include the following acknowledgment:
-# 
+#
 #       This product includes color specifications and designs developed by
 #       Cynthia Brewer (http://colorbrewer.org/).
-# 
+#
 #    Alternately, this acknowledgment may appear in the software itself, if and
-#    wherever such third-party acknowledgments normally appear.  
+#    wherever such third-party acknowledgments normally appear.
 #
 #    3. The name "ColorBrewer" must not be used to endorse or promote products
 #    derived from this software without prior written permission. For written
@@ -2047,8 +1943,8 @@ def main():
 #
 #    4. Products derived from this software may not be called "ColorBrewer",
 #    nor may "ColorBrewer" appear in their name, without prior written
-#    permission of Cynthia Brewer. 
-# 
+#    permission of Cynthia Brewer.
+#
 # THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESSED OR IMPLIED WARRANTIES,
 # INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
 # FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL CYNTHIA
@@ -2058,7 +1954,7 @@ def main():
 # LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 # ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 brewer_colors = {
     'accent3': [(127, 201, 127), (190, 174, 212), (253, 192, 134)],
     'accent4': [(127, 201, 127), (190, 174, 212), (253, 192, 134), (255, 255, 153)],

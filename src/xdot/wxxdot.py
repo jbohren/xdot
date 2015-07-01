@@ -2,7 +2,7 @@
 #
 # wxpython widgets for using Jose Fonseca's cairo graphviz visualizer
 # Copyright (c) 2010, Willow Garage, Inc.
-# 
+#
 # Source modified from Jose Fonseca's XDot pgtk widgets. That code is
 # Copyright 2008 Jose Fonseca
 #
@@ -152,7 +152,7 @@ class WxDotWindow(wx.Panel):
     self.drag_action = WxNullAction(self)
     self.presstime = None
     self.highlight = None
-    
+
     # Bind events
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.Bind(wx.EVT_SIZE, self.OnResize)
@@ -205,7 +205,7 @@ class WxDotWindow(wx.Panel):
     ctx.restore()
 
     self.drag_action.draw(ctx)
-    
+
   def OnScroll(self, event):
     """Zoom the view."""
     if event.GetWheelRotation() > 0:
@@ -308,7 +308,7 @@ class WxDotWindow(wx.Panel):
     width -= 2 * self.ZOOM_TO_FIT_MARGIN
     height -= 2 * self.ZOOM_TO_FIT_MARGIN
 
-    if float(self.graph.width) > 0 and float(self.graph.height) > 0 and width > 0 and height > 0: 
+    if float(self.graph.width) > 0 and float(self.graph.height) > 0 and width > 0 and height > 0:
       zoom_ratio = min(
         float(width)/float(self.graph.width),
         float(height)/float(self.graph.height)
@@ -398,7 +398,7 @@ class WxDotWindow(wx.Panel):
         self.drag_action = WxNullAction(self)
 
     event.Skip()
-    
+
 
   def on_area_size_allocate(self, area, allocation):
     if self.zoom_to_fit_on_resize:
@@ -454,7 +454,7 @@ class WxDotWindow(wx.Panel):
     try:
       self.set_xdotcode(xdotcode)
 
-      # Store references to all the items 
+      # Store references to all the items
       self.items_by_url = {}
       for item in self.graph.nodes + self.graph.edges:
         if item.url is not None:
@@ -497,7 +497,7 @@ class WxDotWindow(wx.Panel):
 class WxDotFrame(wx.Frame):
   def __init__(self):
     wx.Frame.__init__(self, None, -1, "Dot Viewer", size=(512,512))
-    
+
     vbox = wx.BoxSizer(wx.VERTICAL)
 
     # Construct toolbar
@@ -534,7 +534,7 @@ Refresh: R",
   def DoOpenFile(self,event):
     wcd = 'All files (*)|*|GraphViz Dot Files(*.dot)|*.dot|'
     dir = os.getcwd()
-    open_dlg = wx.FileDialog(self, message='Choose a file', defaultDir=dir, defaultFile='', 
+    open_dlg = wx.FileDialog(self, message='Choose a file', defaultDir=dir, defaultFile='',
     wildcard=wcd, style=wx.OPEN|wx.CHANGE_DIR)
     if open_dlg.ShowModal() == wx.ID_OK:
       path = open_dlg.GetPath()
